@@ -1,5 +1,15 @@
 {
-    "presets": [
-        "@babel/preset-env"
-    ]
+  "env": {
+    "prod-old": {
+      "presets": [
+        "@babel/preset-env",
+        "minify"
+      ]
+    },
+    "prod-latest": {
+      "presets": [
+        "minify"
+      ]
+    }
+  }
 }
