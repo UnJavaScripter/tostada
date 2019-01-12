@@ -109,14 +109,14 @@
 
     
 
-    <script src="lib/tostada.js"></script>
+    <script src="lib/es2015/tostada.min.js"></script>
     <script>
         const messages = ['Calao', 'Mogolla', 'Roscón', 'Liberal'];
         const t = new Tostada({position: 'bottom-right'});
 
         function showToast() {
             const rand = Math.random();
-            t.show(`${messages[Math.floor(rand * messages.length)]}`, {displayTime: 1500});
+            t.show(`${messages[Math.floor(rand * messages.length)]}`, {displayTime: 2000});
         }
 
         function showToastWithStyle() {
