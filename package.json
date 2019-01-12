@@ -11,8 +11,8 @@
     "babel-preset-minify": "^0.5.0"
   },
   "scripts": {
-    "build": "BABEL_ENV=prod-old babel src -d lib",
-    "build-latest": "BABEL_ENV=prod-latest babel src -d lib",
+    "build": "BABEL_ENV=prod-old babel src --out-file lib/es2015/tostada.min.js",
+    "build-latest": "BABEL_ENV=prod-latest babel src --out-file lib/modern/tostada.min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
