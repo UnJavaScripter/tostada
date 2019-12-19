@@ -1,21 +1,44 @@
-class Tostada {
-  constructor(options = { position: 'bottom-center' }) {
-    this.__globalOptions = options;
-    const styles = document.createElement('style');
-    const containerIdentificator = '--tst--toast-container';
-    const position = this.__getOptions().getToastsPosition();
-    styles.innerHTML = `
+"use strict";
+class DcTostada {
+    constructor(customOptions) {
+        this.defaultOptions = { position: 'bottom-center', displayTime: 2500 };
+        this.globalOptions = Object.assign(Object.assign({}, this.defaultOptions), customOptions);
+        const styles = document.createElement('style');
+        const containerIdentificator = '--tst--toast-container';
+        const position = this.__getOptions().toastPosition;
+        styles.innerHTML = this.__getStyle(position);
+        document.head.appendChild(styles);
+        this.toastsContainer = document.createElement('section');
+        // TODO: Add more attributes. Support A11y
+        this.toastsContainer.id = containerIdentificator;
+        this.toastsContainer.classList.add(containerIdentificator);
+        document.body.appendChild(this.toastsContainer);
+    }
+    __getFlexPropertyValue(value) {
+        switch (value) {
+            case 'left':
+                return 'flex-start';
+            case 'center':
+                return 'center';
+            case 'right':
+                return 'flex-end';
+            default:
+                return 'center';
+        }
+    }
+    __getStyle(position) {
+        return `
       .--tst--toast-container {
         display: flex;
-        justify-content: ${position.x.propValue}
+        justify-content: ${this.__getFlexPropertyValue(position.x)}
       }
       .--tst--tostada {
         background-color: #1f1f1f;
         color: #f3f3f3;
         padding: 0.75rem;
-        margin-${position.y.value}: 0.6875rem;
+        margin-${position.y}: 0.6875rem;
         font-family: sans-serif;
-        ${position.y.value}: 0;
+        ${position.y}: 0;
         position: fixed;
         transform: translateY(100%);
         opacity: 0;
@@ -32,118 +55,71 @@ class Tostada {
         transition: opacity 0.5s cubic-bezier(0,0,0.3,1), transform 0.3s cubic-bezier(0,0,0.3,1);
       }
     `;
-    document.head.appendChild(styles);
-
-    this.toastsContainer = document.createElement('section');
-    this.toastsContainer.id = containerIdentificator;
-    this.toastsContainer.classList.add(containerIdentificator);
-    document.body.appendChild(this.toastsContainer);
-  }
-
-  __getOptions() {
-    return {
-      ...this.__globalOptions,
-      ...
-      {
-        getToastsPosition: () => {
-          const positionRegEx = new RegExp(/[a-zA-Z]+/gui);
-          const positionValues = this.__globalOptions.position.match(positionRegEx);
-
-          const x = () => {
-            const value = positionValues[1];
-            const propValue = () => {
-              switch (value) {
-                case 'left':
-                  return 'flex-start';
-                case 'center':
-                  return 'center';
-                case 'right':
-                  return 'flex-end';
-                default:
-                  return 'center';
-              }
+    }
+    __getOptions() {
+        return Object.assign(Object.assign({}, this.globalOptions), { toastPosition: this.__getToastsPosition() });
+    }
+    __getToastsPosition() {
+        const positionRegEx = new RegExp(/[a-zA-Z]+/gui);
+        const positionValues = this.globalOptions.position.match(positionRegEx);
+        return { x: positionValues[1], y: positionValues[0] };
+    }
+    // Initiate toast removal
+    __crunchToast(elem, displayTime) {
+        setTimeout(() => {
+            this.__hideToast(elem);
+        }, displayTime);
+    }
+    // Hide a toast
+    __hideToast(elem) {
+        elem.classList.add('--tst--crunchable');
+        elem.classList.remove('--tst--visible');
+    }
+    // Destroy toast when hidden
+    __handleToastRemoval(elem) {
+        const container = elem.parentNode;
+        if (elem.classList.contains('--tst--crunchable') && container) {
+            const toastYPosition = this.__getOptions().toastPosition.y;
+            const siblings = container.childNodes;
+            container.removeChild(elem);
+            if (siblings.length) {
+                siblings.forEach((toast) => {
+                    const re = /\d+/g;
+                    let t = toast;
+                    let match;
+                    match = re.exec(t.style.transform);
+                    if (match !== null) {
+                        t.style.transform = `translateY(${toastYPosition === 'bottom' ? '-' : ''}${Number(match) - 110}%)`;
+                    }
+                });
             }
-            return {
-              value,
-              propValue: propValue()
-            }
-          }
-
-          const y = () => {
-            return {
-              value: positionValues[0]
-            }
-          }
-
-          return { x: x(), y: y() }
         }
-      }
     }
-  }
-
-  __createToast(message, container, options = {}) {
-    const toastYPosition = this.__getOptions().getToastsPosition().y.value;
-    const otherToastsAmount = container.childNodes.length;
-    const nextPos = (100 * (otherToastsAmount - 1)) + (otherToastsAmount * 10);
-    const toast = document.createElement('article');
-
-    toast.classList.add('--tst--tostada');
-
-    toast.addEventListener('transitionend', () => {
-      this.__handleToastRemoval(toast);
-    });
-
-    if (this.globalOptions) {
-      Object.assign(toast.style, this.globalOptions.style);
+    // Display a toast
+    show(message, options) {
+        this.toastsContainer.appendChild(this.__createToast(message, this.toastsContainer, options));
     }
-
-    Object.assign(toast.style, options.style);
-
-    window.requestAnimationFrame(() => {
-      setTimeout(() => {
-        toast.classList.add('--tst--animatable');
-        toast.classList.add('--tst--visible');
-      }, 0);
-    });
-
-    toast.style.transform = `translateY(${toastYPosition === 'bottom' ? '-' : ''}${nextPos + 100}%)`;
-
-    toast.innerHTML = message;
-
-    this.__crunchToast(toast, options.displayTime);
-
-    return toast;
-  }
-
-  __crunchToast(elem, displayTime = 1950) {
-    setTimeout(() => {
-      this.__hideToast(elem);
-    }, displayTime);
-  }
-
-  __hideToast(elem) {
-    elem.classList.add('--tst--crunchable');
-    elem.classList.remove('--tst--visible');
-  }
-
-  __handleToastRemoval(elem) {
-    const container = elem.parentNode;
-
-    if (elem.classList.contains('--tst--crunchable') && container) {
-      const toastYPosition = this.__getOptions().getToastsPosition().y.value;
-      const siblings = container.childNodes;
-      container.removeChild(elem);
-      if (siblings.length) {
-        siblings.forEach((toast) => {
-          if (toast.style.transform) {
-            toast.style.transform = `translateY(${toastYPosition === 'bottom' ? '-' : ''}${(/\d+/g).exec(toast.style.transform)[0] - 110}%)`;
-          }
-        })
-      }
+    // Create a toast
+    __createToast(message, container, options) {
+        const toastYPosition = this.__getOptions().toastPosition.y;
+        const toastPack = container.childNodes;
+        const nextPos = (100 * (toastPack.length - 1)) + (toastPack.length * 10);
+        const toast = document.createElement('article');
+        toast.addEventListener('transitionend', () => {
+            this.__handleToastRemoval(toast);
+        });
+        Object.assign(options, this.globalOptions);
+        Object.assign(toast.style, options.style);
+        toast.classList.add('--tst--tostada');
+        window.requestAnimationFrame(() => {
+            setTimeout(() => {
+                toast.classList.add('--tst--animatable');
+                toast.classList.add('--tst--visible');
+            }, 0);
+        });
+        toast.style.transform = `translateY(${toastYPosition === 'bottom' ? '-' : ''}${nextPos + 100}%)`;
+        toast.innerText = message;
+        this.__crunchToast(toast, options.displayTime);
+        return toast;
     }
-  }
-
-  show(message, options) {
-    this.toastsContainer.appendChild(this.__createToast(message, this.toastsContainer, options));
-  }
 }
