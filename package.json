@@ -4,11 +4,13 @@
   "description": "a small no-dependency toast library",
   "main": "dist/tostada.js",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "^3.7.4"
+  },
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsc -w"
+    "watch": "npx tsc -w"
   },
   "repository": {
     "type": "git",
