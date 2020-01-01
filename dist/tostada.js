@@ -10,10 +10,10 @@ class DcTostada {
         this.globalOptions = Object.assign(Object.assign({}, this.defaultOptions), customOptions);
         this.toastOriginPosition = this.__getPositionFromString(this.globalOptions.position);
         const containerIdentificator = '--tst--toast-container';
-        const styles = document.createElement('style');
+        const styles = document.createElement("style");
         styles.innerHTML = this.__getStyle(this.toastOriginPosition);
         document.head.appendChild(styles);
-        this.toastsContainer = document.createElement('section');
+        this.toastsContainer = document.createElement("section");
         // TODO: Add more attributes. Support A11y
         this.toastsContainer.id = containerIdentificator;
         this.toastsContainer.classList.add(containerIdentificator);
@@ -70,11 +70,11 @@ class DcTostada {
     show(message, options) {
         try {
             if (options.position) {
-                throw ('can\'t set the position for an individual toast');
+                throw ("can\'t set the position for an individual toast");
             }
         }
         catch (err) {
-            console.warn('Toast options error:', err);
+            console.warn("Toast options error:", err);
         }
         const customOptions = Object.assign(Object.assign({}, this.globalOptions), options);
         new Tostada(message, customOptions, this.toastOriginPosition, this.toastsContainer);
@@ -92,17 +92,17 @@ class Tostada {
         this.container = container;
         const toastPack = this.container.childNodes;
         const nextPos = (100 * (toastPack.length - 1)) + (toastPack.length * 10);
-        const toast = document.createElement('article');
+        const toast = document.createElement("article");
         Object.assign(toast.style, this.options.style);
-        toast.classList.add('--tst--tostada');
+        toast.classList.add("--tst--tostada");
         window.requestAnimationFrame(() => {
             setTimeout(() => {
-                toast.classList.add('--tst--animatable');
-                toast.classList.add('--tst--visible');
+                toast.classList.add("--tst--animatable");
+                toast.classList.add("--tst--visible");
             }, 0);
         });
         // If initial position is bottom add positive value to initial y, else, add negative
-        if (this.position.y === 'bottom') {
+        if (this.position.y === "bottom") {
             toast.style.transform = `translateY(-${nextPos + 100}%)`;
             toast.style[MarginKeys.bottom] = '0.6875rem';
             toast.style[PositionYValues.bottom] = '0';
@@ -114,7 +114,7 @@ class Tostada {
             toast.style[PositionYValues.bottom] = 'unset';
         }
         toast.innerText = message;
-        toast.addEventListener('transitionend', () => {
+        toast.addEventListener("transitionend", () => {
             this.__handleToastRemoval(toast);
         });
         this.container.appendChild(toast);
@@ -128,13 +128,13 @@ class Tostada {
     }
     // Hide a toast
     __hideToast(elem) {
-        elem.classList.add('--tst--crunchable');
-        elem.classList.remove('--tst--visible');
+        elem.classList.add("--tst--crunchable");
+        elem.classList.remove("--tst--visible");
     }
     // Destroy toast when hidden
     __handleToastRemoval(elem) {
         const container = elem.parentNode;
-        if (elem.classList.contains('--tst--crunchable') && container) {
+        if (elem.classList.contains("--tst--crunchable") && container) {
             const siblings = container.childNodes;
             container.removeChild(elem);
             if (siblings.length) {
@@ -145,7 +145,7 @@ class Tostada {
                     match = re.exec(toast.style.transform);
                     if (match !== null) {
                         let addToTranslateY = false;
-                        if (this.position.y === 'bottom') {
+                        if (this.position.y === "bottom") {
                             addToTranslateY = true;
                         }
                         toast.style.transform = `translateY(${addToTranslateY ? '-' : ''}${Number(match) - 110}%)`;
